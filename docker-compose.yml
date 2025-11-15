@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  english-comp-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: english-comp-web-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # ソースコードをマウント（ホットリロード用）
+      - .:/app
+      # node_modulesを除外（パフォーマンス向上）
+      - /app/node_modules
+      # Next.jsのキャッシュディレクトリをマウント
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    stdin_open: true
+    tty: true
+    networks:
+      - english-comp-network
+
+networks:
+  english-comp-network:
+    driver: bridge
