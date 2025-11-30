@@ -40,7 +40,7 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border border-gray-200 hover:border-blue-300 rounded-lg">
       {/* カードヘッダー */}
       <div 
         className="p-4 cursor-pointer"

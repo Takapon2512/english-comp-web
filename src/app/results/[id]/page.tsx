@@ -23,6 +23,7 @@ export default function ResultDetailPage() {
   const [resultsLoading, setResultsLoading] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'commentary' | 'correction'>('commentary');
 
   const params = useParams();
   const projectId = params.id as string;
@@ -93,6 +94,9 @@ export default function ResultDetailPage() {
   // 弱点分析からの統計データ
   const overallScore = weaknessAnalysis?.weakness_analysis_summary.overall_score || 0;
 
+  // カテゴリ別分析結果をスコアの低い順にソート
+  const sortedCategoryAnalysisSummary = weaknessAnalysis?.weakness_category_analysis_summary.sort((a, b) => a.score - b.score) || [];
+
   return (
     <DashboardLayout>
       <div className="p-6">
@@ -135,11 +139,13 @@ export default function ResultDetailPage() {
             </div>
           )}
 
-          {/* 統計サマリー */}
+          {/* 学習成果サマリー */}
           {!analysisLoading && !resultsLoading && weaknessAnalysis && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">学習成果サマリー</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">学習成果サマリー</h2>
+              
+              {/* 基本統計 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="shrink-0">
@@ -172,12 +178,7 @@ export default function ResultDetailPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* 弱点分析ダッシュボード */}
-          {!analysisLoading && weaknessAnalysis && (
-            <div className="space-y-8">
               {/* 詳細分析スコア */}
               <AnalysisChart
                 grammarScore={weaknessAnalysis.weakness_detailed_analysis_summary.grammar_score}
@@ -185,22 +186,66 @@ export default function ResultDetailPage() {
                 expressionScore={weaknessAnalysis.weakness_detailed_analysis_summary.expression_score}
                 structureScore={weaknessAnalysis.weakness_detailed_analysis_summary.structure_score}
               />
+            </div>
+          )}
 
+          {/* タブナビゲーション */}
+          {!analysisLoading && !resultsLoading && weaknessAnalysis && (
+            <div className="mb-8">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('commentary')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'commentary'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-blue-300'
+                    }`}
+                  >
+                    論評
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('correction')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'correction'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-blue-300'
+                    }`}
+                  >
+                    添削
+                  </button>
+                </nav>
+              </div>
+            </div>
+          )}
+
+          {/* 論評タブ - カテゴリ別詳細分析 */}
+          {!analysisLoading && weaknessAnalysis && activeTab === 'commentary' && (
+            <div className="space-y-8">
               {/* カテゴリ別分析 */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">カテゴリ別分析</h2>
+              <div className="bg-white rounded-lg shadow p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">カテゴリ別詳細分析</h2>
                 <div className="space-y-6">
-                  {weaknessAnalysis.weakness_category_analysis_summary.map((category) => (
-                    <div key={category.id} className="border border-gray-200 rounded-lg p-4">
+                  {sortedCategoryAnalysisSummary.map((category) => (
+                    <div
+                      key={category.id}
+                      className={`border ${
+                        category.score >= 80
+                          ? 'border-blue-200'
+                          : category.score >= 60
+                            ? 'border-yellow-200'
+                            : 'border-red-200'
+                      } rounded-lg p-4`}
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center">
                           <h3 className="text-lg font-medium text-gray-900">{category.category_name}</h3>
                           <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
-                            category.is_strength 
-                              ? 'bg-slate-200 text-slate-800' 
-                              : category.is_weakness 
-                                ? 'bg-slate-400 text-white' 
-                                : 'bg-slate-100 text-slate-600'
+                            category.score >= 80
+                              ? 'bg-blue-100 text-blue-800'
+                              : category.score >= 60
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
                           }`}>
                             {category.is_strength ? '強み' : category.is_weakness ? '弱点' : '普通'}
                           </span>
@@ -213,7 +258,7 @@ export default function ResultDetailPage() {
                       
                       {category.strengths.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-medium text-slate-700 mb-2">強み</h4>
+                          <h4 className="text-sm font-medium text-blue-700 mb-2">強み</h4>
                           <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
                             {category.strengths.map((strength, index) => (
                               <li key={index}>{strength}</li>
@@ -224,7 +269,7 @@ export default function ResultDetailPage() {
                       
                       {category.issues.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-medium text-slate-800 mb-2">課題</h4>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">課題</h4>
                           <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
                             {category.issues.map((issue, index) => (
                               <li key={index}>{issue}</li>
@@ -250,7 +295,7 @@ export default function ResultDetailPage() {
 
               {/* 学習アドバイス */}
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">パーソナライズされた学習アドバイス</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">学習アドバイス・改善提案</h2>
                 
                 <div className="space-y-6">
                   <div>
@@ -289,13 +334,92 @@ export default function ResultDetailPage() {
                     </p>
                   </div>
                   
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">応援メッセージ</h3>
-                    <p className="text-slate-800 leading-relaxed">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-blue-900 mb-2">応援メッセージ</h3>
+                    <p className="text-blue-800 leading-relaxed">
                       {weaknessAnalysis.weakness_learning_advice_summary.motivational_message}
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* 添削タブ - 添削結果一覧 */}
+          {!resultsLoading && correctResults.length > 0 && activeTab === 'correction' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">添削結果一覧</h2>
+                <div className="space-y-6">
+                  {correctResults.map((result, index) => (
+                    <div key={result.id} className="border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          <h3 className="text-lg font-medium text-gray-900">
+                            問題 {index + 1}: {result.question_template_master.category.name}
+                          </h3>
+                          <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
+                            result.get_points === result.question_template_master.points
+                              ? 'bg-blue-100 text-blue-800'
+                              : result.get_points > result.question_template_master.points * 0.7
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                          }`}>
+                            {result.get_points}/{result.question_template_master.points}点
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 問題文 */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">問題文</h4>
+                        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
+                          <p className="mb-2"><strong>英語:</strong> {result.question_template_master.english}</p>
+                          <p><strong>日本語:</strong> {result.question_template_master.japanese}</p>
+                        </div>
+                      </div>
+
+                      {/* 回答 */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">あなたの回答</h4>
+                        <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                          {result.question_answer.user_answer}
+                        </p>
+                      </div>
+
+                      {/* 添削結果 */}
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">添削結果</h4>
+                        <div className="text-sm text-gray-900 bg-slate-50 p-3 rounded border-l-4 border-blue-300 whitespace-pre-line">
+                          {result.example_correction}
+                        </div>
+                      </div>
+
+                      {/* 模範解答 */}
+                      {result.advice && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700 mb-2">アドバイス</h4>
+                          <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded border-l-4 border-blue-400 whitespace-pre-line">
+                            {result.advice}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 添削結果がない場合 */}
+          {!resultsLoading && correctResults.length === 0 && activeTab === 'correction' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="text-center py-8">
+                <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">添削結果がありません</h3>
+                <p className="text-gray-600">まだ添削結果がありません。問題を解いて添削を受けてみましょう。</p>
               </div>
             </div>
           )}
@@ -306,7 +430,7 @@ export default function ResultDetailPage() {
           )}
 
           {/* エラー状態またはデータなし */}
-          {!analysisLoading && !resultsLoading && !weaknessAnalysis && (
+          {!analysisLoading && !resultsLoading && !weaknessAnalysis && activeTab === 'commentary' && (
             <EmptyState />
           )}
         </div>

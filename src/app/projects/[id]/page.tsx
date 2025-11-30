@@ -13,8 +13,6 @@ export default function ProjectDetailPage() {
   const projectId = params.id as string;
   const [project, setProject] = useState<Project | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [questionsTotal, setQuestionsTotal] = useState(0);
-  const [answerCount, setAnswerCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [questionsLoading, setQuestionsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +44,6 @@ export default function ProjectDetailPage() {
         setQuestionsLoading(true);
         const response = await getProjectQuestions(projectId);
         setQuestions(response.questions);
-        setQuestionsTotal(response.total);
-        setAnswerCount(response.answer_count);
       } catch (err) {
         console.error('問題一覧の取得に失敗しました:', err);
       } finally {
@@ -65,8 +61,6 @@ export default function ProjectDetailPage() {
       setQuestionsLoading(true);
       const response = await getProjectQuestions(projectId);
       setQuestions(response.questions);
-      setQuestionsTotal(response.total);
-      setAnswerCount(response.answer_count);
     } catch (err) {
       console.error('問題一覧の取得に失敗しました:', err);
     } finally {
@@ -145,40 +139,12 @@ export default function ProjectDetailPage() {
               </Button>
             </div>
           </div>
-          
-          <div className="mt-8 grid grid-cols-1">
-            {/* プロジェクト基本情報 */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">基本情報</h2>
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">プロジェクトID</span>
-                  <p className="text-gray-900 font-mono text-sm">{project.id}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">問題数</span>
-                  <p className="text-gray-900">{project.total_questions}問</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">作成日時</span>
-                  <p className="text-gray-900">{formatDate(project.created_at)}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">更新日時</span>
-                  <p className="text-gray-900">{formatDate(project.updated_at)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* プロジェクト問題一覧 */}
           <div className="mt-8">
             <div className="bg-white shadow rounded-lg p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">問題一覧</h2>
-                <div className="text-sm text-gray-500">
-                  {questionsTotal}問中{answerCount}問完了
-                </div>
               </div>
               
               {questionsLoading ? (
@@ -206,6 +172,31 @@ export default function ProjectDetailPage() {
                 <span className="text-blue-800 font-medium text-lg">
                   + 問題を追加する
                 </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1">
+            {/* プロジェクト基本情報 */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">このプロジェクトについて</h2>
+              <div className="space-y-3">
+                <div>
+                  <span className="text-sm font-medium text-gray-500">プロジェクトID</span>
+                  <p className="text-gray-900 font-mono text-sm">{project.id}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">問題数</span>
+                  <p className="text-gray-900">{project.total_questions}問</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">作成日時</span>
+                  <p className="text-gray-900">{formatDate(project.created_at)}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">更新日時</span>
+                  <p className="text-gray-900">{formatDate(project.updated_at)}</p>
+                </div>
               </div>
             </div>
           </div>
