@@ -68,6 +68,11 @@ export default function ExercisePage() {
   const fetchprojectQuestionsData = useCallback(async () => {
     try {
       const questionsResponse = await getProjectQuestions(projectId);
+      if (!questionsResponse.questions || questionsResponse.questions.length === 0) {
+        setError('このプロジェクトには問題がありません');
+        router.push('/projects/' + projectId);
+        return;
+      }
       setQuestions(questionsResponse.questions);
     } catch (error) {
       console.error('問題の取得に失敗しました:', error);

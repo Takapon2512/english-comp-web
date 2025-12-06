@@ -1,17 +1,12 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { Button, FullScreenLoading, InlineLoading } from '@/components/ui';
+import { Button, FullScreenLoading } from '@/components/ui';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
-  const { user, isLoading, logout } = useAuth();
-  const [notifications, setNotifications] = useState(true);
-  const [emailUpdates, setEmailUpdates] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const { user, isLoading } = useAuth();
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   // ローディング進捗のシミュレーション
@@ -45,38 +40,15 @@ export default function SettingsPage() {
     />;
   }
 
-  const handleSaveSettings = async () => {
-    setIsSaving(true);
-    // 設定保存の処理をシミュレート
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSaving(false);
-    alert('設定が保存されました！');
-  };
-
   return (
     <DashboardLayout>
       <div className="p-6">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="bg-white shadow rounded-lg">
           {/* ヘッダー */}
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">設定</h1>
-              <div className="flex space-x-3">
-                <Link href="/dashboard">
-                  <Button variant="outline" size="sm">
-                    ダッシュボードに戻る
-                  </Button>
-                </Link>
-                <Link href="/profile">
-                  <Button variant="outline" size="sm">
-                    プロフィール
-                  </Button>
-                </Link>
-                <Button onClick={logout} variant="secondary" size="sm">
-                  ログアウト
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -117,7 +89,7 @@ export default function SettingsPage() {
             </div>
 
             {/* 通知設定 */}
-            <div>
+            {/* <div>
               <h2 className="text-lg font-medium text-gray-900 mb-4">通知設定</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -157,10 +129,10 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* 表示設定 */}
-            <div>
+            {/* <div>
               <h2 className="text-lg font-medium text-gray-900 mb-4">表示設定</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -182,7 +154,7 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* 危険な操作 */}
             <div>
@@ -197,31 +169,6 @@ export default function SettingsPage() {
                     アカウントを削除
                   </Button>
                 </div>
-              </div>
-            </div>
-
-            {/* 保存ボタン */}
-            <div className="border-t border-gray-200 pt-6">
-              <div className="flex justify-end space-x-3">
-                <Button variant="outline" disabled={isSaving}>
-                  キャンセル
-                </Button>
-                <Button 
-                  onClick={handleSaveSettings} 
-                  variant="primary"
-                  disabled={isSaving}
-                  className="min-w-[120px]"
-                >
-                  {isSaving ? (
-                    <InlineLoading 
-                      variant="dots" 
-                      size="sm" 
-                      text="保存中..."
-                    />
-                  ) : (
-                    '設定を保存'
-                  )}
-                </Button>
               </div>
             </div>
           </div>

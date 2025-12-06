@@ -131,9 +131,13 @@ export default function ProjectDetailPage() {
             <div
               className="flex space-x-2"
             >
-              <Button variant="primary" size="sm">
-                演習する
-              </Button>
+              {
+                project.total_questions > 0 && (
+                  <Button variant="primary" size="sm">
+                    演習する
+                  </Button>
+                )
+              }
               <Button variant="outline" size="sm">
                 編集
               </Button>
@@ -151,7 +155,7 @@ export default function ProjectDetailPage() {
                 <div className="flex justify-center py-8">
                   <Loading />
                 </div>
-              ) : questions.length > 0 ? (
+              ) : questions && questions.length > 0 ? (
                 <div className="space-y-4">
                   {questions.map((question) => (
                     <QuestionCard

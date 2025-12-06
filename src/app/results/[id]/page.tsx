@@ -14,6 +14,18 @@ import {
   AnalysisChart
 } from '@/components/pages/results';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// PieChartを動的インポートでクライアントサイドのみで読み込み
+const DynamicPieChart = dynamic(
+  () => import('@/components/pages/results/PieChart'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-20 h-20 bg-gray-100 rounded-full animate-pulse"></div>
+    )
+  }
+);
 
 export default function ResultDetailPage() {
   const { isLoading } = useAuth();
@@ -149,11 +161,12 @@ export default function ResultDetailPage() {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="shrink-0">
-                      <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                      </div>
+                      <DynamicPieChart
+                        score={overallScore}
+                        maxScore={100}
+                        title="総合スコア"
+                        color="#3b82f6"
+                      />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">総合スコア</p>
@@ -165,11 +178,12 @@ export default function ResultDetailPage() {
                 <div className="bg-white rounded-lg shadow p-6">
                   <div className="flex items-center">
                     <div className="shrink-0">
-                      <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                        </svg>
-                      </div>
+                      <DynamicPieChart
+                        score={maxPoints > 0 ? Math.round((totalPoints / maxPoints) * 100) : 0}
+                        maxScore={100}
+                        title="得点率"
+                        color="#10b981"
+                      />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">得点率</p>
@@ -251,7 +265,17 @@ export default function ResultDetailPage() {
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-bold text-gray-900">{category.score}</span>
+                          <span
+                            className={`text-2xl font-bold ${
+                              category.score >= 80
+                                ? 'text-blue-800'
+                                : category.score >= 60
+                                  ? 'text-yellow-800'
+                                  : 'text-red-800'
+                            }`}
+                          >
+                            {category.score}
+                          </span>
                           <span className="text-sm text-gray-500 ml-1">点</span>
                         </div>
                       </div>
